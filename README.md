@@ -1,11 +1,11 @@
-# Very short description of the package
+# Take care of Queue from Cron Job it self.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/rakshitbharat/queuefy.svg?style=flat-square)](https://packagist.org/packages/rakshitbharat/queuefy)
 [![Build Status](https://img.shields.io/travis/rakshitbharat/queuefy/master.svg?style=flat-square)](https://travis-ci.org/rakshitbharat/queuefy)
 [![Quality Score](https://img.shields.io/scrutinizer/g/rakshitbharat/queuefy.svg?style=flat-square)](https://scrutinizer-ci.com/g/rakshitbharat/queuefy)
 [![Total Downloads](https://img.shields.io/packagist/dt/rakshitbharat/queuefy.svg?style=flat-square)](https://packagist.org/packages/rakshitbharat/queuefy)
 
-This is where your description should go. Try and limit it to a paragraph or two, and maybe throw in a mention of what PSRs you support to avoid any confusion with users and contributors.
+Useful when you want to run Queue from Cron Job.
 
 ## Installation
 
