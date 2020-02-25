@@ -24,12 +24,6 @@ From console command single queue thread will be runned.
 * Usefull when you can't install supervisor on server.
 * When you can put Cronjob but cant put supervisor config.
 
-### Testing
-
-``` bash
-composer test
-```
-
 ### Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
@@ -50,7 +44,3 @@ If you discover any security related issues, please email rakshitbharatproject@g
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
-## Laravel Package Boilerplate
-
-This package was generated using the [Laravel Package Boilerplate](https://laravelpackageboilerplate.com).
