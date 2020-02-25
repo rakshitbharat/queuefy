@@ -18,7 +18,12 @@ composer require rakshitbharat/queuefy
 ## Usage
 
 ``` php
-// Usage description here
+From console command single queue thread will be runned.
+
+* When you dont have access to put supervisor config file.
+* Usefull when you can't install supervisor on server.
+* When you can put Cronjob but cant put supervisor config.
+* Mostly usefull on shared server (hosting).
 ```
 
 ### Testing
