@@ -38,6 +38,8 @@ class ConsoleCommand extends Console
      */
     public function handle()
     {
+        if (!($PID = shell_exec("pgrep 'php /testcron.php'")))
+            echo 'Process is running with PID ' . $PID . '.';
 
     }
 }
