@@ -38,6 +38,7 @@ class ConsoleCommand extends Command
      */
     public function handle()
     {
+        echo 'Command Started';
         $commandToExecute = "";
         if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
             $phpPath = exec("where php");
@@ -76,6 +77,7 @@ class ConsoleCommand extends Command
             $OUTPUT_FINAL = 'Process is running with PID ' . $ID . '.';
         }
         if(empty($ID)){
+            echo ' and Started Que';
             $OUTPUT_FINAL = shell_exec($commandToExecute);
         }
         echo $OUTPUT_FINAL;
