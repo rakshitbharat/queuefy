@@ -5,7 +5,7 @@ namespace Rakshitbharat\Queuefy;
 
 use Illuminate\Console\Command;
 
-class ConsoleCommand extends Console
+class ConsoleCommand extends Command
 {
     /**
      * The name and signature of the console command.
