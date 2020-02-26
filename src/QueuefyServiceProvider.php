@@ -13,9 +13,6 @@ class QueuefyServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__ . '/../config/config.php' => config_path('queuefy.php'),
-            ], 'config');
             $this->commands([
                 ConsoleCommand::class
             ]);
