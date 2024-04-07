@@ -38,7 +38,7 @@ QUEUE_COMMAND_AFTER_PHP_ARTISAN="your_custom_command"
 TO STOP RUNNING OF QUE, add your preferred command to your `.env` file like so:
 
 ```
-by Default it will be true
+by Default it will be false
 STOP_QUEUE=true
 ```
 
