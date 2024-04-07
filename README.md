@@ -35,6 +35,13 @@ For custom queue commands, add your preferred command to your `.env` file like s
 QUEUE_COMMAND_AFTER_PHP_ARTISAN="your_custom_command"
 ```
 
+TO STOP RUNNING OF QUE, add your preferred command to your `.env` file like so:
+
+```
+by Default it will be true
+STOP_QUEUE=true
+```
+
 This is especially useful for shared hosting environments, or when you're unable to use traditional supervisor configurations for queue management.
 
 ## Changelog
