@@ -2,7 +2,6 @@
 # Queuefy
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/rakshitbharat/queuefy.svg?style=flat-square)](https://packagist.org/packages/rakshitbharat/queuefy)
-[![Build Status](https://img.shields.io/travis/rakshitbharat/queuefy/master.svg?style=flat-square)](https://travis-ci.org/rakshitbharat/queuefy)
 [![Quality Score](https://img.shields.io/scrutinizer/g/rakshitbharat/queuefy.svg?style=flat-square)](https://scrutinizer-ci.com/g/rakshitbharat/queuefy)
 [![Total Downloads](https://img.shields.io/packagist/dt/rakshitbharat/queuefy.svg?style=flat-square)](https://packagist.org/packages/rakshitbharat/queuefy)
 
