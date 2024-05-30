@@ -16,16 +16,19 @@ class QueuefyServiceProvider extends ServiceProvider
             $this->commands([
                 ConsoleCommand::class
             ]);
+
             $this->app->booted(function () {
-                if (
-                    !empty(config('queuefy.STOP_QUEUE'))
-                    and
-                    !empty(config('queuefy.QUEUE_COMMAND_AFTER_PHP_ARTISAN'))
-                    and
-                    config('queuefy.STOP_QUEUE') == false
-                ) {
+                $queueCommandAfterPhpArtisan = config('queuefy.QUEUE_COMMAND_AFTER_PHP_ARTISAN');
+
+                if (!empty($queueCommandAfterPhpArtisan)) {
                     $schedule = app(Schedule::class);
                     $schedule->command('queuefy:run')->everyMinute();
+
+                    // Log the scheduled command
+                    \Log::info('Queuefy command scheduled: queuefy:run');
+                } else {
+                    // Log the reason for not scheduling the command
+                    \Log::warning('Queuefy command not scheduled: QUEUE_COMMAND_AFTER_PHP_ARTISAN is empty');
                 }
             });
         }
