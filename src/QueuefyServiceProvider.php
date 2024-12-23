@@ -19,13 +19,17 @@ class QueuefyServiceProvider extends ServiceProvider
 
             $this->app->booted(function () {
                 $queueCommandAfterPhpArtisan = config('queuefy.QUEUE_COMMAND_AFTER_PHP_ARTISAN');
+                $logQueCommandFired = config('queuefy.QUEUE_LOG_QUE_COMMAND_FIRED');
 
                 if (!empty($queueCommandAfterPhpArtisan)) {
                     $schedule = app(Schedule::class);
                     $schedule->command('queuefy:run')->everyMinute();
 
                     // Log the scheduled command
-                    \Log::info('Queuefy command scheduled: queuefy:run');
+
+                    if ($logQueCommandFired) {
+                        \Log::info('Queuefy command scheduled: queuefy:run');
+                    }
                 } else {
                     // Log the reason for not scheduling the command
                     \Log::warning('Queuefy command not scheduled: QUEUE_COMMAND_AFTER_PHP_ARTISAN is empty');
