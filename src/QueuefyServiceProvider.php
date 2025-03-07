@@ -4,6 +4,7 @@ namespace Rakshitbharat\Queuefy;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Log;
 
 class QueuefyServiceProvider extends ServiceProvider
 {
@@ -17,23 +18,13 @@ class QueuefyServiceProvider extends ServiceProvider
                 ConsoleCommand::class
             ]);
 
+            // Allow package config to be published
+            $this->publishes([
+                __DIR__ . '/../config/config.php' => config_path('queuefy.php'),
+            ], 'config');
+
             $this->app->booted(function () {
-                $queueCommandAfterPhpArtisan = config('queuefy.QUEUE_COMMAND_AFTER_PHP_ARTISAN');
-                $logQueCommandFired = config('queuefy.QUEUE_LOG_QUE_COMMAND_FIRED');
-
-                if (!empty($queueCommandAfterPhpArtisan)) {
-                    $schedule = app(Schedule::class);
-                    $schedule->command('queuefy:run')->everyMinute();
-
-                    // Log the scheduled command
-
-                    if ($logQueCommandFired) {
-                        \Log::info('Queuefy command scheduled: queuefy:run');
-                    }
-                } else {
-                    // Log the reason for not scheduling the command
-                    \Log::warning('Queuefy command not scheduled: QUEUE_COMMAND_AFTER_PHP_ARTISAN is empty');
-                }
+                $this->scheduleQueueCommand();
             });
         }
     }
@@ -43,12 +34,48 @@ class QueuefyServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Automatically apply the package configuration
+        // Merge package configuration
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'queuefy');
 
-        // Register the main class to use with the facade
+        // Register singleton
         $this->app->singleton('queuefy', function () {
             return new Queuefy;
         });
+    }
+
+    /**
+     * Schedule the queue command based on configuration
+     */
+    protected function scheduleQueueCommand()
+    {
+        $queueCommand = config('queuefy.QUEUE_COMMAND_AFTER_PHP_ARTISAN');
+        $logEnabled = config('queuefy.QUEUE_LOG_QUE_COMMAND_FIRED', false);
+        $stopQueue = config('queuefy.STOP_QUEUE', false);
+
+        if ($stopQueue) {
+            if ($logEnabled) {
+                Log::info('Queuefy: Queue processing is stopped via STOP_QUEUE configuration');
+            }
+            return;
+        }
+
+        if (empty($queueCommand)) {
+            Log::warning('Queuefy: Queue command not scheduled - QUEUE_COMMAND_AFTER_PHP_ARTISAN is empty');
+            return;
+        }
+
+        try {
+            $schedule = $this->app->make(Schedule::class);
+            $schedule->command('queuefy:run')
+                    ->everyMinute()
+                    ->withoutOverlapping()
+                    ->runInBackground();
+
+            if ($logEnabled) {
+                Log::info('Queuefy: Queue command scheduled successfully - ' . $queueCommand);
+            }
+        } catch (\Exception $e) {
+            Log::error('Queuefy: Failed to schedule queue command - ' . $e->getMessage());
+        }
     }
 }
