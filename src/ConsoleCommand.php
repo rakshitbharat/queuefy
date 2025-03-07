@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 class ConsoleCommand extends Command
 {
     protected $signature = 'queuefy:run';
-    protected $description = 'Run Laravel queue worker through cron';
+    protected $description = 'Run queue worker through cron';
     
     private $isWindows;
 
@@ -22,6 +22,7 @@ class ConsoleCommand extends Command
     {
         if (config('queuefy.STOP_QUEUE', false)) {
             $this->info('Queue processing is stopped via STOP_QUEUE configuration');
+            $this->logMessage('Queue processing stopped via STOP_QUEUE configuration');
             return;
         }
 
@@ -29,15 +30,18 @@ class ConsoleCommand extends Command
         
         if (empty($commandToExecute)) {
             $this->error('No valid queue command configuration found');
+            $this->logMessage('Failed to start queue worker: No valid command configuration');
             return;
         }
 
         if ($this->isProcessRunning($commandToExecute)) {
             $this->info('Queue worker is already running');
+            $this->logMessage('Queue worker already running - skipping start');
             return;
         }
 
         $this->startQueueWorker($commandToExecute);
+        $this->info('Queue worker started successfully');
     }
 
     private function buildCommand(): string
@@ -76,15 +80,19 @@ class ConsoleCommand extends Command
             } else {
                 shell_exec($command . ' > /dev/null 2>&1 &');
             }
-
-            $this->info('Queue worker started successfully');
             
-            if (config('queuefy.QUEUE_LOG_QUE_COMMAND_FIRED', false)) {
-                Log::info('Queuefy: Started queue worker with command: ' . $command);
-            }
+            $this->logMessage('Started queue worker with command: ' . $command);
         } catch (\Exception $e) {
             $this->error('Failed to start queue worker: ' . $e->getMessage());
-            Log::error('Queuefy: Failed to start queue worker - ' . $e->getMessage());
+            $this->logMessage('Failed to start queue worker: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    private function logMessage(string $message): void 
+    {
+        if (config('queuefy.QUEUE_LOG_QUE_COMMAND_FIRED', false)) {
+            Log::info('Queuefy: ' . $message);
         }
     }
 }

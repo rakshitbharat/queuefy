@@ -22,15 +22,33 @@ class QueueJobTest extends TestCase
 
     protected function defineEnvironment($app)
     {
-        $app['config']->set('queue.default', 'sync');
+        // Use database queue for proper event testing
+        $app['config']->set('queue.default', 'database');
+        $app['config']->set('queue.connections.database', [
+            'driver' => 'database',
+            'table' => 'jobs',
+            'queue' => 'default',
+            'retry_after' => 90,
+        ]);
         $app['config']->set('queuefy.QUEUE_COMMAND_AFTER_PHP_ARTISAN', 'queue:work --timeout=0');
     }
 
     protected function setUp(): void
     {
         parent::setUp();
-        Queue::fake();
-        Event::fake([JobProcessing::class]);
+        
+        // Create jobs table
+        $this->artisan('queue:table');
+        $this->artisan('migrate');
+        
+        // Clear any existing events/jobs
+        Event::fake();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->artisan('migrate:reset');
+        parent::tearDown();
     }
 
     /** @test */
@@ -39,37 +57,34 @@ class QueueJobTest extends TestCase
         $job = new TestJob();
         dispatch($job);
 
-        Queue::assertPushed(TestJob::class);
+        // Assert job was pushed to queue
+        $this->assertDatabaseHas('jobs', [
+            'queue' => 'default'
+        ]);
     }
 
     /** @test */
     public function it_respects_queue_priority()
     {
-        config(['queuefy.QUEUE_COMMAND_AFTER_PHP_ARTISAN' => 'queue:work --queue=high,default']);
-
         $highPriorityJob = (new TestJob())->onQueue('high');
         $defaultPriorityJob = new TestJob();
 
         dispatch($highPriorityJob);
         dispatch($defaultPriorityJob);
 
-        Queue::assertPushed(TestJob::class, function ($job) {
-            return $job->queue === 'high';
-        });
-
-        Queue::assertPushed(TestJob::class, function ($job) {
-            return $job->queue === null;
-        });
+        $this->assertDatabaseHas('jobs', ['queue' => 'high']);
+        $this->assertDatabaseHas('jobs', ['queue' => 'default']);
     }
 
     /** @test */
     public function it_handles_job_events()
     {
+        Event::fake([JobProcessing::class]);
+        
         $job = new TestJob();
-        dispatch($job);
+        dispatch($job)->onConnection('sync'); // Use sync for immediate processing
 
         Event::assertDispatched(JobProcessing::class);
-        Queue::assertPushed(TestJob::class);
     }
 }
 
@@ -79,6 +94,8 @@ class TestJob implements ShouldQueue
 
     public function handle()
     {
+        // Simulate job work
+        usleep(100);
         return true;
     }
 }
