@@ -61,7 +61,8 @@ class ConsoleCommand extends Command
         );
     }
 
-    private function isProcessRunning(string $command): bool
+    // Changed from private to protected so we can mock it in tests
+    protected function isProcessRunning(string $command): bool
     {
         $checkCommand = $this->isWindows
             ? sprintf('tasklist | FIND "%s"', $command)

@@ -22,7 +22,6 @@ class QueueJobTest extends TestCase
 
     protected function defineEnvironment($app)
     {
-        // Use database queue for proper event testing
         $app['config']->set('queue.default', 'database');
         $app['config']->set('queue.connections.database', [
             'driver' => 'database',
@@ -30,34 +29,27 @@ class QueueJobTest extends TestCase
             'queue' => 'default',
             'retry_after' => 90,
         ]);
-        $app['config']->set('queuefy.QUEUE_COMMAND_AFTER_PHP_ARTISAN', 'queue:work --timeout=0');
+        $app['config']->set('database.default', 'testbench');
+        $app['config']->set('database.connections.testbench', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
     }
 
-    protected function setUp(): void
+    protected function defineDatabaseMigrations()
     {
-        parent::setUp();
-        
-        // Create jobs table
-        $this->artisan('queue:table');
-        $this->artisan('migrate');
-        
-        // Clear any existing events/jobs
-        Event::fake();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->artisan('migrate:reset');
-        parent::tearDown();
+        $this->loadMigrationsFrom(__DIR__ . '/../migrations');
     }
 
     /** @test */
     public function it_can_process_queued_jobs()
     {
+        Event::fake([JobProcessing::class]);
+        
         $job = new TestJob();
         dispatch($job);
 
-        // Assert job was pushed to queue
         $this->assertDatabaseHas('jobs', [
             'queue' => 'default'
         ]);
@@ -66,6 +58,8 @@ class QueueJobTest extends TestCase
     /** @test */
     public function it_respects_queue_priority()
     {
+        Event::fake([JobProcessing::class]);
+        
         $highPriorityJob = (new TestJob())->onQueue('high');
         $defaultPriorityJob = new TestJob();
 
@@ -82,9 +76,11 @@ class QueueJobTest extends TestCase
         Event::fake([JobProcessing::class]);
         
         $job = new TestJob();
-        dispatch($job)->onConnection('sync'); // Use sync for immediate processing
+        dispatch($job)->onConnection('sync');
 
-        Event::assertDispatched(JobProcessing::class);
+        Event::assertDispatched(JobProcessing::class, function ($event) {
+            return true;
+        });
     }
 }
 
@@ -94,8 +90,6 @@ class TestJob implements ShouldQueue
 
     public function handle()
     {
-        // Simulate job work
-        usleep(100);
         return true;
     }
 }
